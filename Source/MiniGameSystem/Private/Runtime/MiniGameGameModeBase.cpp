@@ -15,6 +15,7 @@ void AMiniGameGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// GameMode는 서버에만 존재하므로 서버가 아닌 경우 바로 종료
 	if (!HasAuthority() || GetGameInstance() == nullptr)
 	{
 		return;
@@ -26,6 +27,7 @@ void AMiniGameGameModeBase::BeginPlay()
 		return;
 	}
 
+	// 서버에서만 저장된 미니게임 세팅을 가져오고, 실제 미니게임 플레이를 시작
 	InitializeMiniGame(MiniGameManager->GetActiveSetup(), MiniGameManager->GetActiveParticipants());
 	InitializeRuleSet();
 	StartMiniGame();
@@ -46,6 +48,7 @@ void AMiniGameGameModeBase::Tick(float DeltaSeconds)
 
 	if (AMiniGameGameStateBase* MiniGameState = GetMiniGameGameState())
 	{
+		// 남은 시간은 서버에서 계산하고 GameState 복제로 모든 클라이언트와 동기화
 		const float RemainingTimeSeconds = ActiveSetup.TimeLimitSeconds > 0.f
 			? FMath::Max(0.f, ActiveSetup.TimeLimitSeconds - ElapsedTimeSeconds)
 			: 0.f;
@@ -54,6 +57,7 @@ void AMiniGameGameModeBase::Tick(float DeltaSeconds)
 
 	if (RuleSet != nullptr && RuleSet->ShouldFinishGame(GetMiniGameGameState()))
 	{
+		// 개별 룰셋이 종료 조건을 만족했다고 판단하면 즉시 종료
 		FinishMiniGame(MiniGameTags.FinishReason_Completed);
 		return;
 	}
@@ -74,6 +78,7 @@ void AMiniGameGameModeBase::InitializeMiniGame(const FMiniGameSetup& InSetup, co
 
 	if (AMiniGameGameStateBase* MiniGameState = GetMiniGameGameState())
 	{
+		// 클라이언트가 확인할 초기 상태는 GameState에 복제 가능한 형태로 저장
 		MiniGameState->SetParticipants(ActiveParticipants);
 		MiniGameState->SetRemainingTimeSeconds(ActiveSetup.TimeLimitSeconds);
 		MiniGameState->SetMiniGameState(FMiniGameNativeTags::Get().State_Preparing);
@@ -83,6 +88,7 @@ void AMiniGameGameModeBase::InitializeMiniGame(const FMiniGameSetup& InSetup, co
 
 void AMiniGameGameModeBase::StartMiniGame()
 {
+	// 실제 플레이 시작 시점을 기록하고 상태를 Playing으로 바꾸는 부분
 	bMiniGameStarted = true;
 	ElapsedTimeSeconds = 0.f;
 
@@ -95,16 +101,19 @@ void AMiniGameGameModeBase::StartMiniGame()
 
 void AMiniGameGameModeBase::RequestFinishMiniGame()
 {
+	// 기본적으로 사용하는 종료 요청
 	FinishMiniGame(FMiniGameNativeTags::Get().FinishReason_Completed);
 }
 
 void AMiniGameGameModeBase::StopMiniGame(FGameplayTag Reason)
 {
+	// 외부에서 게임 종료의 원인을 태그로 받아 미니게임을 강제로 종료
 	FinishMiniGame(Reason);
 }
 
 FMiniGameResult AMiniGameGameModeBase::BuildMiniGameResult() const
 {
+	// 룰셋이 있으면 룰셋 결과를 우선 사용하고, 없으면 기본 결과를 생성하는 방식
 	FMiniGameResult Result = RuleSet != nullptr
 		? RuleSet->BuildMiniGameResult(GetMiniGameGameState())
 		: FMiniGameResult();
@@ -135,6 +144,7 @@ void AMiniGameGameModeBase::AddScore(APlayerState* PlayerState, int32 DeltaScore
 
 	if (RuleSet != nullptr)
 	{
+		// 점수 계산 규칙이 있으면 룰셋에서 처리
 		RuleSet->AddScore(MiniGameState, PlayerState, DeltaScore);
 	}
 	else
@@ -154,6 +164,7 @@ void AMiniGameGameModeBase::FinishMiniGame(FGameplayTag Reason)
 
 	if (AMiniGameGameStateBase* MiniGameState = GetMiniGameGameState())
 	{
+		// 종료 직전 점수판을 정리하고 최종 상태를 Completed로 확정한다.
 		MiniGameState->SetMiniGameState(FMiniGameNativeTags::Get().State_Finishing);
 		if (RuleSet != nullptr)
 		{
@@ -170,6 +181,7 @@ void AMiniGameGameModeBase::FinishMiniGame(FGameplayTag Reason)
 	{
 		if (UMiniGameManagerSubsystem* MiniGameManager = GetGameInstance()->GetSubsystem<UMiniGameManagerSubsystem>())
 		{
+			// 최종 결과 저장과 맵 복귀는 Subsystem이 일괄 관리한다.
 			MiniGameManager->CommitMiniGameResult(Result);
 		}
 	}
@@ -199,6 +211,7 @@ void AMiniGameGameModeBase::InitializeRuleSet()
 	RuleSet = NewObject<UMiniGameRuleSet>(this, Definition->RuleSetClass);
 	if (RuleSet != nullptr)
 	{
+		// 룰셋은 미니게임별 종료 조건과 점수 처리 정책을 캡슐화한다.
 		RuleSet->InitializeRules(ActiveSetup);
 	}
 }

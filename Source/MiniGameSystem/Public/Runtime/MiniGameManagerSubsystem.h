@@ -20,9 +20,11 @@ class MINIGAMESYSTEM_API UMiniGameManagerSubsystem : public UGameInstanceSubsyst
 	GENERATED_BODY()
 
 public:
+	// 서브시스템 생명주기 관련
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
+	// 미니게임 시작/종료 제어
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	bool RequestStartMiniGame(FName MiniGameId, const TArray<APlayerState*>& Players);
 
@@ -38,6 +40,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	void NotifyMiniGameStarted();
 
+	// 현재 실행 상태 조회
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	FGameplayTag GetCurrentState() const { return CurrentState; }
 
@@ -53,6 +56,7 @@ public:
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	bool HasActiveMiniGame() const { return ActiveDefinition != nullptr; }
 
+	// 마지막 결과 조회
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	const FMiniGameResult& GetLastCommittedResult() const { return LastCommittedResult; }
 
@@ -62,12 +66,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	void ClearLastCommittedResult();
 
+	// 미니게임 정의 조회
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	UMiniGameDefinition* FindMiniGameDefinition(FName MiniGameId);
 
+	// 현재 월드가 활성 미니게임 월드인지 판별
 	bool IsActiveMiniGameWorld(const UWorld* World) const;
 
 public:
+	// 상태 변화 알림
 	UPROPERTY(BlueprintAssignable, Category="MiniGame")
 	FOnMiniGamePreparing OnMiniGamePreparing;
 	UPROPERTY(BlueprintAssignable, Category="MiniGame")
@@ -104,9 +111,14 @@ protected:
 	UPROPERTY()
 	FString ReturnMapPackageName;
 
+	// 내부 상태 전환 및 세팅 구성
 	void SetCurrentState(FGameplayTag NewState);
 	bool BuildSetupFromDefinition(const UMiniGameDefinition* Definition, const TArray<APlayerState*>& Players);
+
+	// 런타임 데이터 초기화와 맵 이동 처리
 	void ClearActiveSession();
 	bool TravelToMap(const TSoftObjectPtr<UWorld>& MapAsset);
+
+	// 데이터 에셋 검색 및 캐시
 	void CacheAvailableDefinitions();
 };

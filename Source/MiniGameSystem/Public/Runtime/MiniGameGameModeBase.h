@@ -16,9 +16,12 @@ class MINIGAMESYSTEM_API AMiniGameGameModeBase : public AGameModeBase, public IM
 
 public:
 	AMiniGameGameModeBase();
+
+	// 서버 진입 및 진행 루프
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	// IMiniGameInstanceInterface 구현
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	virtual void InitializeMiniGame(const FMiniGameSetup& InSetup, const TArray<FMiniGameParticipantInfo>& InParticipants) override;
 
@@ -34,6 +37,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	virtual FMiniGameResult BuildMiniGameResult() const override;
 
+	// 서버 전용 점수/종료 처리
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="MiniGame")
 	void AddScore(APlayerState* PlayerState, int32 DeltaScore);
 
@@ -41,6 +45,7 @@ public:
 	void FinishMiniGame(FGameplayTag Reason);
 
 protected:
+	// 현재 라운드 실행 정보
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="MiniGame")
 	FMiniGameSetup ActiveSetup;
 
@@ -59,6 +64,7 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="MiniGame")
 	float ElapsedTimeSeconds = 0.f;
 
+	// 보조 객체 초기화
 	AMiniGameGameStateBase* GetMiniGameGameState() const;
 	void InitializeRuleSet();
 };

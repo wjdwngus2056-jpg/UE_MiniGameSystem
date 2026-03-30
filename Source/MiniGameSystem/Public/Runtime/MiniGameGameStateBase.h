@@ -13,23 +13,31 @@ class MINIGAMESYSTEM_API AMiniGameGameStateBase : public AGameStateBase
 public:
 	AMiniGameGameStateBase();
 
+	// 복제 설정
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	// 진행 상태
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	FGameplayTag GetMiniGameState() const { return CurrentState; }
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	void SetMiniGameState(FGameplayTag NewState);
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	bool IsMiniGameState(FGameplayTag StateTag) const { return CurrentState == StateTag; }
+
+	// 남은 시간
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	float GetRemainingTimeSeconds() const { return RemainingTimeSeconds; }
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	void SetRemainingTimeSeconds(float NewRemainingTimeSeconds);
+
+	// 참가자 정보
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	const TArray<FMiniGameParticipantInfo>& GetParticipants() const { return Participants; }
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	void SetParticipants(const TArray<FMiniGameParticipantInfo>& InParticipants);
+
+	// 점수판 정보
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	const TArray<FMiniGameScoreEntry>& GetScoreBoard() const { return ScoreBoard; }
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
