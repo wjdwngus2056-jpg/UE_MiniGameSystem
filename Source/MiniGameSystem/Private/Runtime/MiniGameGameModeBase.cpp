@@ -144,7 +144,7 @@ void AMiniGameGameModeBase::AddScore(APlayerState* PlayerState, int32 DeltaScore
 
 	if (RuleSet != nullptr)
 	{
-		// 점수 계산 규칙이 있으면 룰셋에서 처리
+		// 점수 계산 규칙이 있으면 룰셋의 규칙을 우선적으로 처리
 		RuleSet->AddScore(MiniGameState, PlayerState, DeltaScore);
 	}
 	else
@@ -164,7 +164,7 @@ void AMiniGameGameModeBase::FinishMiniGame(FGameplayTag Reason)
 
 	if (AMiniGameGameStateBase* MiniGameState = GetMiniGameGameState())
 	{
-		// 종료 직전 점수판을 정리하고 최종 상태를 Completed로 확정한다.
+		// 종료 직전에 점수판을 정리하고 최종 상태를 Completed로 변화
 		MiniGameState->SetMiniGameState(FMiniGameNativeTags::Get().State_Finishing);
 		if (RuleSet != nullptr)
 		{
@@ -181,7 +181,7 @@ void AMiniGameGameModeBase::FinishMiniGame(FGameplayTag Reason)
 	{
 		if (UMiniGameManagerSubsystem* MiniGameManager = GetGameInstance()->GetSubsystem<UMiniGameManagerSubsystem>())
 		{
-			// 최종 결과 저장과 맵 복귀는 Subsystem이 일괄 관리한다.
+			// 최종 결과 저장과 맵 복귀는 Subsystem이 일괄적으로 관리함
 			MiniGameManager->CommitMiniGameResult(Result);
 		}
 	}
@@ -211,7 +211,7 @@ void AMiniGameGameModeBase::InitializeRuleSet()
 	RuleSet = NewObject<UMiniGameRuleSet>(this, Definition->RuleSetClass);
 	if (RuleSet != nullptr)
 	{
-		// 룰셋은 미니게임별 종료 조건과 점수 처리 정책을 캡슐화한다.
+		// 룰셋은 미니게임별 종료 조건과 점수 처리 방식 등을 캡슐화
 		RuleSet->InitializeRules(ActiveSetup);
 	}
 }
