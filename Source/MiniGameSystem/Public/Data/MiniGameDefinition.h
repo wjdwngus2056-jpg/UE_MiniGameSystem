@@ -23,8 +23,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniGame")
 	FText Description;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniGame")
-	EMiniGameGenre Genre = EMiniGameGenre::None;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniGame", meta=(Categories="MiniGame.Genre"))
+	FGameplayTag Genre = FMiniGameNativeTags::Get().Genre_None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniGame")
 	int32 MinPlayers = 1;
@@ -36,7 +36,7 @@ public:
 	float DefaultTimeLimitSeconds = 60.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniGame")
-	FGameplayTagContainer SessionTags;
+	FGameplayTagContainer MiniGameTags;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniGame")
 	TSoftObjectPtr<UWorld> MiniGameMap;

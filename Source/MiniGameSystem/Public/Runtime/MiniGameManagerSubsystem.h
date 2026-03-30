@@ -8,7 +8,7 @@
 class UMiniGameDefinition;
 class UWorld;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMiniGameStateChanged, EMiniGameState, NewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMiniGameStateChanged, FGameplayTag, NewState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMiniGamePreparing, const FMiniGameSetup&, Setup);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMiniGameStarted);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMiniGameFinished, const FMiniGameResult&, Result);
@@ -30,7 +30,7 @@ public:
 	bool RequestFinishMiniGame();
 
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
-	void StopActiveMiniGame(EMiniGameFinishReason Reason);
+	void StopActiveMiniGame(FGameplayTag Reason);
 
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	void CommitMiniGameResult(const FMiniGameResult& Result);
@@ -39,7 +39,7 @@ public:
 	void NotifyMiniGameStarted();
 
 	UFUNCTION(BlueprintPure, Category="MiniGame")
-	EMiniGameState GetCurrentState() const { return CurrentState; }
+	FGameplayTag GetCurrentState() const { return CurrentState; }
 
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	const FMiniGameSetup& GetActiveSetup() const { return ActiveSetup; }
@@ -80,8 +80,8 @@ public:
 	FOnMiniGameResultCommitted OnMiniGameResultCommitted;
 
 protected:
-	UPROPERTY(VisibleInstanceOnly, Category="MiniGame")
-	EMiniGameState CurrentState = EMiniGameState::Idle;
+	UPROPERTY(VisibleInstanceOnly, Category="MiniGame", meta=(Categories="MiniGame.State"))
+	FGameplayTag CurrentState = FMiniGameNativeTags::Get().State_Idle;
 
 	UPROPERTY(VisibleInstanceOnly, Category="MiniGame")
 	FMiniGameSetup ActiveSetup;
@@ -104,7 +104,7 @@ protected:
 	UPROPERTY()
 	FString ReturnMapPackageName;
 
-	void SetCurrentState(EMiniGameState NewState);
+	void SetCurrentState(FGameplayTag NewState);
 	bool BuildSetupFromDefinition(const UMiniGameDefinition* Definition, const TArray<APlayerState*>& Players);
 	void ClearActiveSession();
 	bool TravelToMap(const TSoftObjectPtr<UWorld>& MapAsset);

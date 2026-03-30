@@ -29,7 +29,7 @@ public:
 	virtual void RequestFinishMiniGame() override;
 
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
-	virtual void StopMiniGame(EMiniGameFinishReason Reason) override;
+	virtual void StopMiniGame(FGameplayTag Reason) override;
 
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
 	virtual FMiniGameResult BuildMiniGameResult() const override;
@@ -38,7 +38,7 @@ public:
 	void AddScore(APlayerState* PlayerState, int32 DeltaScore);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="MiniGame")
-	void FinishMiniGame(EMiniGameFinishReason Reason);
+	void FinishMiniGame(FGameplayTag Reason);
 
 protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="MiniGame")

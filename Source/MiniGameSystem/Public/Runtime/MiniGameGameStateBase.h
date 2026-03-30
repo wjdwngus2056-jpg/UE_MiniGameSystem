@@ -17,9 +17,11 @@ public:
 
 public:
 	UFUNCTION(BlueprintPure, Category="MiniGame")
-	EMiniGameState GetMiniGameState() const { return CurrentState; }
+	FGameplayTag GetMiniGameState() const { return CurrentState; }
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
-	void SetMiniGameState(EMiniGameState NewState);
+	void SetMiniGameState(FGameplayTag NewState);
+	UFUNCTION(BlueprintPure, Category="MiniGame")
+	bool IsMiniGameState(FGameplayTag StateTag) const { return CurrentState == StateTag; }
 	UFUNCTION(BlueprintPure, Category="MiniGame")
 	float GetRemainingTimeSeconds() const { return RemainingTimeSeconds; }
 	UFUNCTION(BlueprintCallable, Category="MiniGame")
@@ -38,8 +40,8 @@ public:
 	int32 GetScore(APlayerState* PlayerState) const;
 
 protected:
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category="MiniGame")
-	EMiniGameState CurrentState = EMiniGameState::Idle;
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category="MiniGame", meta=(Categories="MiniGame.State"))
+	FGameplayTag CurrentState = FMiniGameNativeTags::Get().State_Idle;
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category="MiniGame")
 	float RemainingTimeSeconds = 0.f;
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category="MiniGame")

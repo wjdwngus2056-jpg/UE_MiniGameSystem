@@ -19,6 +19,6 @@ public:
 	virtual void InitializeMiniGame(const FMiniGameSetup& InSetup, const TArray<FMiniGameParticipantInfo>& InParticipants) = 0;
 	virtual void StartMiniGame() = 0;
 	virtual void RequestFinishMiniGame() = 0;
-	virtual void StopMiniGame(EMiniGameFinishReason Reason) = 0;
+	virtual void StopMiniGame(FGameplayTag Reason) = 0;
 	virtual FMiniGameResult BuildMiniGameResult() const = 0;
 };

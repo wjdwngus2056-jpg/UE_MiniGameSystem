@@ -29,7 +29,9 @@ void UMiniGameManagerSubsystem::Deinitialize()
 
 bool UMiniGameManagerSubsystem::RequestStartMiniGame(FName MiniGameId, const TArray<APlayerState*>& Players)
 {
-	if (CurrentState != EMiniGameState::Idle || MiniGameId.IsNone())
+	const FMiniGameNativeTags& Tags = FMiniGameNativeTags::Get();
+
+	if (CurrentState != Tags.State_Idle || MiniGameId.IsNone())
 	{
 		return false;
 	}
@@ -54,16 +56,16 @@ bool UMiniGameManagerSubsystem::RequestStartMiniGame(FName MiniGameId, const TAr
 	ActiveDefinition = Definition;
 	ReturnMapPackageName = World->GetPackage()->GetName();
 
-	SetCurrentState(EMiniGameState::Preparing);
+	SetCurrentState(Tags.State_Preparing);
 	OnMiniGamePreparing.Broadcast(ActiveSetup);
 
-	SetCurrentState(EMiniGameState::Traveling);
+	SetCurrentState(Tags.State_Traveling);
 	return TravelToMap(ActiveSetup.MiniGameMap);
 }
 
 bool UMiniGameManagerSubsystem::RequestFinishMiniGame()
 {
-	if (CurrentState != EMiniGameState::Playing)
+	if (CurrentState != FMiniGameNativeTags::Get().State_Playing)
 	{
 		return false;
 	}
@@ -80,18 +82,20 @@ bool UMiniGameManagerSubsystem::RequestFinishMiniGame()
 		}
 	}
 
-	StopActiveMiniGame(EMiniGameFinishReason::Completed);
+	StopActiveMiniGame(FMiniGameNativeTags::Get().FinishReason_Completed);
 	return true;
 }
 
-void UMiniGameManagerSubsystem::StopActiveMiniGame(EMiniGameFinishReason Reason)
+void UMiniGameManagerSubsystem::StopActiveMiniGame(FGameplayTag Reason)
 {
-	if (CurrentState == EMiniGameState::Idle)
+	const FMiniGameNativeTags& Tags = FMiniGameNativeTags::Get();
+
+	if (CurrentState == Tags.State_Idle)
 	{
 		return;
 	}
 
-	if (CurrentState == EMiniGameState::Playing)
+	if (CurrentState == Tags.State_Playing)
 	{
 		if (UWorld* World = GetWorld())
 		{
@@ -114,18 +118,20 @@ void UMiniGameManagerSubsystem::StopActiveMiniGame(EMiniGameFinishReason Reason)
 
 void UMiniGameManagerSubsystem::CommitMiniGameResult(const FMiniGameResult& Result)
 {
-	if (CurrentState == EMiniGameState::Idle)
+	const FMiniGameNativeTags& Tags = FMiniGameNativeTags::Get();
+
+	if (CurrentState == Tags.State_Idle)
 	{
 		return;
 	}
 
-	SetCurrentState(EMiniGameState::Finishing);
+	SetCurrentState(Tags.State_Finishing);
 	OnMiniGameFinished.Broadcast(Result);
 
 	LastCommittedResult = Result;
 	bHasLastCommittedResult = true;
 
-	SetCurrentState(EMiniGameState::Completed);
+	SetCurrentState(Tags.State_Completed);
 	OnMiniGameResultCommitted.Broadcast(Result);
 
 	const FString SavedReturnMapPackageName = ReturnMapPackageName;
@@ -133,7 +139,7 @@ void UMiniGameManagerSubsystem::CommitMiniGameResult(const FMiniGameResult& Resu
 
 	if (!SavedReturnMapPackageName.IsEmpty())
 	{
-		SetCurrentState(EMiniGameState::Returning);
+		SetCurrentState(Tags.State_Returning);
 
 		if (UWorld* World = GetWorld())
 		{
@@ -141,18 +147,20 @@ void UMiniGameManagerSubsystem::CommitMiniGameResult(const FMiniGameResult& Resu
 		}
 	}
 
-	SetCurrentState(EMiniGameState::Idle);
+	SetCurrentState(Tags.State_Idle);
 }
 
 void UMiniGameManagerSubsystem::NotifyMiniGameStarted()
 {
-	if (CurrentState != EMiniGameState::Preparing && CurrentState != EMiniGameState::Traveling)
+	const FMiniGameNativeTags& Tags = FMiniGameNativeTags::Get();
+
+	if (CurrentState != Tags.State_Preparing && CurrentState != Tags.State_Traveling)
 	{
 		return;
 	}
 
 	OnMiniGameStarted.Broadcast();
-	SetCurrentState(EMiniGameState::Playing);
+	SetCurrentState(Tags.State_Playing);
 }
 
 void UMiniGameManagerSubsystem::ClearLastCommittedResult()
@@ -194,7 +202,7 @@ bool UMiniGameManagerSubsystem::IsActiveMiniGameWorld(const UWorld* World) const
 	return !ActiveMiniGamePackageName.IsEmpty() && World->GetPackage()->GetName() == ActiveMiniGamePackageName;
 }
 
-void UMiniGameManagerSubsystem::SetCurrentState(EMiniGameState NewState)
+void UMiniGameManagerSubsystem::SetCurrentState(FGameplayTag NewState)
 {
 	if (CurrentState == NewState)
 	{
@@ -218,7 +226,7 @@ bool UMiniGameManagerSubsystem::BuildSetupFromDefinition(const UMiniGameDefiniti
 	ActiveSetup.MinPlayers = Definition->MinPlayers;
 	ActiveSetup.MaxPlayers = Definition->MaxPlayers;
 	ActiveSetup.TimeLimitSeconds = Definition->DefaultTimeLimitSeconds;
-	ActiveSetup.SessionTags = Definition->SessionTags;
+	ActiveSetup.MiniGameTags = Definition->MiniGameTags;
 	ActiveSetup.MiniGameMap = Definition->MiniGameMap;
 	ActiveParticipants.Reset();
 
@@ -255,7 +263,7 @@ bool UMiniGameManagerSubsystem::TravelToMap(const TSoftObjectPtr<UWorld>& MapAss
 	if (World == nullptr || World->GetNetMode() == NM_Client || !MapPath.IsValid())
 	{
 		ClearActiveSession();
-		SetCurrentState(EMiniGameState::Idle);
+		SetCurrentState(FMiniGameNativeTags::Get().State_Idle);
 		return false;
 	}
 
@@ -263,7 +271,7 @@ bool UMiniGameManagerSubsystem::TravelToMap(const TSoftObjectPtr<UWorld>& MapAss
 	if (TravelURL.IsEmpty())
 	{
 		ClearActiveSession();
-		SetCurrentState(EMiniGameState::Idle);
+		SetCurrentState(FMiniGameNativeTags::Get().State_Idle);
 		return false;
 	}
 

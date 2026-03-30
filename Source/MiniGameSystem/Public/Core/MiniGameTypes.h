@@ -2,38 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Tags/MiniGameNativeTags.h"
 #include "MiniGameTypes.generated.h"
 
 class APlayerState;
 class UWorld;
-
-UENUM(BlueprintType)
-enum class EMiniGameState : uint8
-{
-	Idle,
-	Preparing,
-	Traveling,
-	Playing,
-	Finishing,
-	Returning,
-	Completed
-};
-
-UENUM(BlueprintType)
-enum class EMiniGameGenre : uint8
-{
-	None,
-	Competition,
-	Survival,
-	Race
-};
-
-UENUM(BlueprintType)
-enum class EMiniGameFinishReason : uint8
-{
-	TimeOver,
-	Completed
-};
 
 USTRUCT(BlueprintType)
 struct MINIGAMESYSTEM_API FMiniGameParticipantInfo
@@ -79,11 +52,16 @@ struct MINIGAMESYSTEM_API FMiniGameSetup
 {
 	GENERATED_BODY()
 
+	FMiniGameSetup()
+		: Genre(FMiniGameNativeTags::Get().Genre_None)
+	{
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName MiniGameId = NAME_None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EMiniGameGenre Genre = EMiniGameGenre::None;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(Categories="MiniGame.Genre"))
+	FGameplayTag Genre;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 MinPlayers = 1;
@@ -95,7 +73,7 @@ struct MINIGAMESYSTEM_API FMiniGameSetup
 	float TimeLimitSeconds = 60.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTagContainer SessionTags;
+	FGameplayTagContainer MiniGameTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSoftObjectPtr<UWorld> MiniGameMap;
@@ -109,11 +87,16 @@ struct MINIGAMESYSTEM_API FMiniGameResult
 {
 	GENERATED_BODY()
 
+	FMiniGameResult()
+		: FinishReason(FMiniGameNativeTags::Get().FinishReason_TimeOver)
+	{
+	}
+
 	UPROPERTY(BlueprintReadOnly)
 	FName MiniGameId = NAME_None;
 
-	UPROPERTY(BlueprintReadOnly)
-	EMiniGameFinishReason FinishReason = EMiniGameFinishReason::TimeOver;
+	UPROPERTY(BlueprintReadOnly, meta=(Categories="MiniGame.FinishReason"))
+	FGameplayTag FinishReason;
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FMiniGameScoreEntry> ScoreBoard;

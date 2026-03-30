@@ -35,6 +35,7 @@ void AMiniGameGameModeBase::BeginPlay()
 void AMiniGameGameModeBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	const FMiniGameNativeTags& MiniGameTags = FMiniGameNativeTags::Get();
 
 	if (!HasAuthority() || !bMiniGameStarted || bMiniGameFinished)
 	{
@@ -53,13 +54,13 @@ void AMiniGameGameModeBase::Tick(float DeltaSeconds)
 
 	if (RuleSet != nullptr && RuleSet->ShouldFinishGame(GetMiniGameGameState()))
 	{
-		FinishMiniGame(EMiniGameFinishReason::Completed);
+		FinishMiniGame(MiniGameTags.FinishReason_Completed);
 		return;
 	}
 
 	if (ActiveSetup.TimeLimitSeconds > 0.f && ElapsedTimeSeconds >= ActiveSetup.TimeLimitSeconds)
 	{
-		FinishMiniGame(EMiniGameFinishReason::TimeOver);
+		FinishMiniGame(MiniGameTags.FinishReason_TimeOver);
 	}
 }
 
@@ -75,7 +76,7 @@ void AMiniGameGameModeBase::InitializeMiniGame(const FMiniGameSetup& InSetup, co
 	{
 		MiniGameState->SetParticipants(ActiveParticipants);
 		MiniGameState->SetRemainingTimeSeconds(ActiveSetup.TimeLimitSeconds);
-		MiniGameState->SetMiniGameState(EMiniGameState::Preparing);
+		MiniGameState->SetMiniGameState(FMiniGameNativeTags::Get().State_Preparing);
 		MiniGameState->SetScoreBoard(TArray<FMiniGameScoreEntry>());
 	}
 }
@@ -87,17 +88,17 @@ void AMiniGameGameModeBase::StartMiniGame()
 
 	if (AMiniGameGameStateBase* MiniGameState = GetMiniGameGameState())
 	{
-		MiniGameState->SetMiniGameState(EMiniGameState::Playing);
+		MiniGameState->SetMiniGameState(FMiniGameNativeTags::Get().State_Playing);
 		MiniGameState->SetRemainingTimeSeconds(ActiveSetup.TimeLimitSeconds);
 	}
 }
 
 void AMiniGameGameModeBase::RequestFinishMiniGame()
 {
-	FinishMiniGame(EMiniGameFinishReason::Completed);
+	FinishMiniGame(FMiniGameNativeTags::Get().FinishReason_Completed);
 }
 
-void AMiniGameGameModeBase::StopMiniGame(EMiniGameFinishReason Reason)
+void AMiniGameGameModeBase::StopMiniGame(FGameplayTag Reason)
 {
 	FinishMiniGame(Reason);
 }
@@ -142,7 +143,7 @@ void AMiniGameGameModeBase::AddScore(APlayerState* PlayerState, int32 DeltaScore
 	}
 }
 
-void AMiniGameGameModeBase::FinishMiniGame(EMiniGameFinishReason Reason)
+void AMiniGameGameModeBase::FinishMiniGame(FGameplayTag Reason)
 {
 	if (bMiniGameFinished)
 	{
@@ -153,13 +154,13 @@ void AMiniGameGameModeBase::FinishMiniGame(EMiniGameFinishReason Reason)
 
 	if (AMiniGameGameStateBase* MiniGameState = GetMiniGameGameState())
 	{
-		MiniGameState->SetMiniGameState(EMiniGameState::Finishing);
+		MiniGameState->SetMiniGameState(FMiniGameNativeTags::Get().State_Finishing);
 		if (RuleSet != nullptr)
 		{
 			RuleSet->ResolveRanking(MiniGameState);
 		}
 		MiniGameState->SetRemainingTimeSeconds(0.f);
-		MiniGameState->SetMiniGameState(EMiniGameState::Completed);
+		MiniGameState->SetMiniGameState(FMiniGameNativeTags::Get().State_Completed);
 	}
 
 	FMiniGameResult Result = BuildMiniGameResult();

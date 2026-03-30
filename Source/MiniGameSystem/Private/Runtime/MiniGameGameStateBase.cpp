@@ -18,7 +18,7 @@ void AMiniGameGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(AMiniGameGameStateBase, ScoreBoard);
 }
 
-void AMiniGameGameStateBase::SetMiniGameState(EMiniGameState NewState)
+void AMiniGameGameStateBase::SetMiniGameState(FGameplayTag NewState)
 {
 	CurrentState = NewState;
 }
