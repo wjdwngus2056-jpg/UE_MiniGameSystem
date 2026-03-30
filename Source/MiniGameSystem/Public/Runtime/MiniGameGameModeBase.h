@@ -63,8 +63,7 @@ protected:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="MiniGame")
 	float ElapsedTimeSeconds = 0.f;
-
-	// 보조 객체 초기화
+	
 	AMiniGameGameStateBase* GetMiniGameGameState() const;
 	void InitializeRuleSet();
 };
